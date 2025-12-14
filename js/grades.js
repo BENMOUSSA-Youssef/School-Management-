@@ -143,8 +143,23 @@ function displayGradesTable() {
     container.innerHTML = tableHTML;
 }
 
-// Initialize grades page when it loads
+/**
+ * ============================================
+ * PAGE INITIALIZATION
+ * ============================================
+ * 
+ * This runs when the page finishes loading
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // Display the grades table
     displayGradesTable();
+});
+
+// Backup initialization on window load
+window.addEventListener('load', () => {
+    const container = document.getElementById('gradesTableContainer');
+    if (container && (!container.innerHTML || container.innerHTML.trim() === '')) {
+        displayGradesTable();
+    }
 });
 

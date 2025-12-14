@@ -3,15 +3,26 @@
  * students.js - Student Management Logic
  * ============================================
  * 
+ * KEY JAVASCRIPT CONCEPTS USED:
+ * 1. DOM Manipulation - Getting and setting HTML elements
+ * 2. Event Listeners - Handling form submissions and button clicks
+ * 3. localStorage - Saving and retrieving data
+ * 4. Functions - Reusable code blocks
+ * 5. Arrays & Objects - Storing and manipulating data
+ * 6. Loops (forEach) - Iterating through arrays
+ * 7. Conditionals (if/else) - Making decisions
+ * 8. Template Literals - Building HTML strings
+ * 
  * This file handles:
- * - Adding new students
- * - Editing existing students
- * - Deleting students
- * - Displaying students in a table
+ * - Adding new students (CRUD: Create)
+ * - Editing existing students (CRUD: Update)
+ * - Deleting students (CRUD: Delete)
+ * - Displaying students in a table (CRUD: Read)
  * - Form validation
  */
 
-// Global variable to track if we're editing
+// Global variable to track if we're editing a student
+// This helps us know if we're adding new or updating existing
 let editingStudentId = null;
 
 /**
@@ -244,18 +255,25 @@ function handleFormSubmit(event) {
     displayStudents();
 }
 
-// Event Listeners
+/**
+ * ============================================
+ * PAGE INITIALIZATION
+ * ============================================
+ * 
+ * This runs when the page finishes loading (DOMContentLoaded event)
+ * It sets up all the event listeners and displays initial data
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    // Populate user dropdown
+    // Step 1: Populate the user dropdown with available student accounts
     populateUserDropdown();
     
-    // Display existing students
+    // Step 2: Display all existing students in the table
     displayStudents();
     
-    // Handle form submission
+    // Step 3: Add event listener to the form - when user submits, call handleFormSubmit
     document.getElementById('studentForm').addEventListener('submit', handleFormSubmit);
     
-    // Handle cancel button
+    // Step 4: Add event listener to cancel button - when clicked, reset the form
     document.getElementById('cancelBtn').addEventListener('click', resetForm);
 });
 

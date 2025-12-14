@@ -128,11 +128,22 @@ function findStudentForUser() {
  * Display results table
  */
 function displayResults() {
+    // Calculate all results first
     calculateAllResults();
     
     const container = document.getElementById('resultsTableContainer');
+    if (!container) {
+        console.error('Results container not found!');
+        return;
+    }
+    
     const currentUser = getCurrentUser();
-    const isStudent = currentUser && currentUser.role === 'student';
+    if (!currentUser) {
+        container.innerHTML = '<p class="empty-state">Please log in to view results.</p>';
+        return;
+    }
+    
+    const isStudent = currentUser.role === 'student';
     
     // For students, show only their own results
     let resultsToShow = [...allResults];
@@ -146,8 +157,14 @@ function displayResults() {
         }
     }
     
+    // Show all students even if they don't have grades yet
     if (resultsToShow.length === 0) {
-        container.innerHTML = '<p class="empty-state">No results found.</p>';
+        const students = getStudents();
+        if (students.length === 0) {
+            container.innerHTML = '<p class="empty-state">No students found. Please add students first.</p>';
+        } else {
+            container.innerHTML = '<p class="empty-state">No grades assigned yet. Students will appear here once grades are assigned.</p>';
+        }
         return;
     }
     
@@ -268,8 +285,23 @@ function sortResults() {
     displayResults();
 }
 
-// Initialize results page when it loads
+/**
+ * ============================================
+ * PAGE INITIALIZATION
+ * ============================================
+ * 
+ * This runs when the page finishes loading
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // Display all results
     displayResults();
+});
+
+// Backup initialization on window load
+window.addEventListener('load', () => {
+    const container = document.getElementById('resultsTableContainer');
+    if (container && (!container.innerHTML || container.innerHTML.trim() === '')) {
+        displayResults();
+    }
 });
 

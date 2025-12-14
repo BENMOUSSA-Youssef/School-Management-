@@ -12,28 +12,34 @@
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>EMSISystem</h2>
+                <div class="sidebar-logo-full">EMSISystem</div>
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="index.html"><i>📊</i> Dashboard</a></li>
-                    <li><a href="students.html"><i>👥</i> Students</a></li>
-                    <li><a href="modules.html"><i>📚</i> Modules</a></li>
-                    <li><a href="grades.html" class="active"><i>📝</i> Grades</a></li>
-                    <li><a href="results.html"><i>📈</i> Results</a></li>
-                    <li><a href="profile.html"><i>👤</i> Profile</a></li>
+                    <li><a href="index.html"><span class="nav-icon">🏠</span><span class="nav-text">Dashboard</span></a></li>
+                    <li><a href="results.html"><span class="nav-icon">📈</span><span class="nav-text">Result</span></a></li>
+                    <li><a href="grades.html" class="active"><span class="nav-icon">📝</span><span class="nav-text">Grade</span></a></li>
+                    <li><a href="students.html"><span class="nav-icon">👥</span><span class="nav-text">Student</span></a></li>
+                    <li><a href="modules.html"><span class="nav-icon">📚</span><span class="nav-text">Module</span></a></li>
+                    <li><a href="profile.html"><span class="nav-icon">⚙️</span><span class="nav-text">Profile</span></a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <div class="user-info">
-                    <span id="userName">Loading...</span>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-role">Admin</div>
+                    <div class="sidebar-user-role">Teacher</div>
                 </div>
-                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                <button class="sidebar-logout-btn" onclick="logoutUser()">Logout</button>
+                <div class="theme-toggle-sidebar" style="margin-top: var(--spacing-md);">
+                    <button class="theme-btn active" id="darkThemeBtn" onclick="setTheme('dark')" title="Dark mode">🌙</button>
+                    <button class="theme-btn" id="lightThemeBtn" onclick="setTheme('light')" title="Light mode">☀️</button>
+                </div>
             </div>
         </aside>
 
         <main class="main-content">
-            <div class="top-navbar">
+            <div class="top-navbar-simple">
+                <div class="navbar-logo">EMSISystem</div>
                 <h1>Grades Assignment</h1>
                 <div class="user-badge" id="userBadge">Teacher</div>
             </div>
@@ -59,15 +65,51 @@
     <script src="js/data.js"></script>
     <script src="js/grades.js"></script>
     <script>
+        /**
+         * ============================================
+         * GRADES PAGE - JavaScript Initialization
+         * ============================================
+         */
+        
+        // Protect page - only teachers can access
         protectPage('teacher');
+        
+        // Get current user and update UI
         const user = getCurrentUser();
         if (user) {
-            document.getElementById('userName').textContent = user.name;
             document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
         }
+        
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+        
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.body.classList.remove('light-theme');
+                document.getElementById('darkThemeBtn').classList.add('active');
+                document.getElementById('lightThemeBtn').classList.remove('active');
+            } else {
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark-theme');
+                document.getElementById('lightThemeBtn').classList.add('active');
+                document.getElementById('darkThemeBtn').classList.remove('active');
+            }
+            localStorage.setItem('theme', theme);
+        }
+        
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
+        
+        // Ensure grades table is displayed after page loads
+        // This is a backup in case DOMContentLoaded in grades.js doesn't fire
+        window.addEventListener('load', () => {
+            if (typeof displayGradesTable === 'function') {
+                displayGradesTable();
+            }
+        });
     </script>
 </body>
 </html>
