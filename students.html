@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - Student Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EMSISystem</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="index.html"><i>📊</i> Dashboard</a></li>
+                    <li><a href="students.html" class="active"><i>👥</i> Students</a></li>
+                    <li><a href="modules.html"><i>📚</i> Modules</a></li>
+                    <li><a href="grades.html"><i>📝</i> Grades</a></li>
+                    <li><a href="results.html"><i>📈</i> Results</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="userName">Loading...</span>
+                </div>
+                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-navbar">
+                <h1>Student Management</h1>
+                <div class="user-badge" id="userBadge">Teacher</div>
+            </div>
+
+            <div class="content-area">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 id="formTitle">Add New Student</h2>
+                    </div>
+                    <div id="alertMessage"></div>
+                    <form id="studentForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentName">Full Name *</label>
+                                <input type="text" id="studentName" required placeholder="Enter student name">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentCIN">CIN *</label>
+                                <input type="text" id="studentCIN" required placeholder="Enter CIN" maxlength="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentGroup">Group *</label>
+                                <input type="text" id="studentGroup" required placeholder="e.g., 3IIR-1">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary">Save Student</button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Students List</h2>
+                    </div>
+                    <div id="studentsTableContainer"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/students.js"></script>
+    <script>
+        protectPage('teacher');
+        const user = getCurrentUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

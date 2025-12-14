@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Student Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EMSISystem</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="index.html"><i>📊</i> Dashboard</a></li>
+                    <li><a href="students.html"><i>👥</i> Students</a></li>
+                    <li><a href="modules.html"><i>📚</i> Modules</a></li>
+                    <li><a href="grades.html"><i>📝</i> Grades</a></li>
+                    <li><a href="results.html" class="active"><i>📈</i> Results</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="userName">Loading...</span>
+                </div>
+                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-navbar">
+                <h1>Results & Statistics</h1>
+                <div class="user-badge" id="userBadge">User</div>
+            </div>
+
+            <div class="content-area">
+                <div class="filter-section" id="filterSection" style="display: none;">
+                    <label for="filterStatus"><strong>Filter:</strong></label>
+                    <select id="filterStatus" onchange="filterResults()">
+                        <option value="all">All Students</option>
+                        <option value="passed">Passed Only (≥10)</option>
+                        <option value="failed">Failed Only (&lt;10)</option>
+                    </select>
+                    <label for="sortBy"><strong>Sort by:</strong></label>
+                    <select id="sortBy" onchange="sortResults()">
+                        <option value="name">Name (A-Z)</option>
+                        <option value="average-desc">Average (High to Low)</option>
+                        <option value="average-asc">Average (Low to High)</option>
+                    </select>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 id="resultsTitle">Student Results</h2>
+                    </div>
+                    <div id="resultsTableContainer"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/results.js"></script>
+    <script>
+        // Protect page - allow both teachers and students
+        protectPage();
+        
+        const user = getCurrentUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
+            
+            // Show filters only for teachers
+            if (user.role === 'teacher') {
+                document.getElementById('filterSection').style.display = 'flex';
+            } else {
+                document.getElementById('resultsTitle').textContent = 'My Results';
+                // Hide teacher-only links for students
+                const teacherLinks = document.querySelectorAll('a[href="students.html"], a[href="modules.html"], a[href="grades.html"], a[href="index.html"]');
+                teacherLinks.forEach(link => {
+                    link.parentElement.style.display = 'none';
+                });
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Student Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EMSISystem</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="index.html" class="active"><i>📊</i> Dashboard</a></li>
+                    <li><a href="students.html"><i>👥</i> Students</a></li>
+                    <li><a href="modules.html"><i>📚</i> Modules</a></li>
+                    <li><a href="grades.html"><i>📝</i> Grades</a></li>
+                    <li><a href="results.html"><i>📈</i> Results</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="userName">Loading...</span>
+                </div>
+                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <div class="top-navbar">
+                <h1>Dashboard</h1>
+                <div class="user-badge" id="userBadge">Teacher</div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Statistics Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Statistics will be dynamically generated here -->
+                </div>
+
+                <!-- Best Student Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Best Student</h2>
+                    </div>
+                    <div id="bestStudent">
+                        <p class="empty-state">No data available yet. Add students and grades to see statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        // Protect page - teachers only
+        protectPage('teacher');
+        
+        // Display user info and setup navigation
+        const user = getCurrentUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
+            
+            // Hide teacher-only links for students
+            if (user.role === 'student') {
+                const teacherLinks = document.querySelectorAll('a[href="students.html"], a[href="modules.html"], a[href="grades.html"]');
+                teacherLinks.forEach(link => {
+                    link.parentElement.style.display = 'none';
+                });
+            }
+        }
+        
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
