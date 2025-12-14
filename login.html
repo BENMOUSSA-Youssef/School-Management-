@@ -7,11 +7,18 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
+    <!-- Left Side - Form -->
+    <div class="auth-form-section">
+        <div class="auth-logo">
+            <div class="auth-logo-icon">E</div>
+            <span>EMSISystem</span>
+        </div>
+        
+        <div class="auth-form-container">
             <div class="auth-header">
-                <h1>Student Management System</h1>
-                <p>Sign in to your account</p>
+                <p class="subtitle">Welcome Back</p>
+                <h1>Sign in to your account<span class="dot">.</span></h1>
+                <p class="login-link">Don't have an account? <a href="register.html">Create account</a></p>
             </div>
             
             <div id="alertMessage"></div>
@@ -19,28 +26,62 @@
             <form id="loginForm" class="auth-form">
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="Enter your email">
+                    <div class="input-wrapper">
+                        <span class="input-icon">✉</span>
+                        <input type="email" id="email" required placeholder="Enter your email">
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" required placeholder="Enter your password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">👁</button>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <button type="submit" class="btn btn-primary">Sign In</button>
             </form>
             
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="register.html">Register here</a></p>
-                <p class="auth-info">
-                    <small>Default Teacher: teacher@emsi.ma / admin123</small>
+            <div style="text-align: center; padding: var(--spacing-lg); background: rgba(14, 165, 233, 0.1); border-radius: 10px; border: 1px solid rgba(14, 165, 233, 0.2);">
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 12px; margin-bottom: var(--spacing-xs);">
+                    <strong style="color: var(--primary);">Demo Account:</strong>
+                </p>
+                <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+                    teacher@emsi.ma / admin123
                 </p>
             </div>
+        </div>
+    </div>
+    
+    <!-- Right Side - Visual -->
+    <div class="auth-visual-section">
+        <div class="auth-visual-content">
+            <h2>Student Management Made Simple</h2>
+            <p>Manage students, grades, and results all in one place</p>
+            <ul class="auth-visual-features">
+                <li>Track student progress</li>
+                <li>Calculate weighted averages</li>
+                <li>Generate detailed reports</li>
+                <li>Role-based access control</li>
+            </ul>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁';
+            }
+        }
+        
         // Handle login form submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -53,7 +94,6 @@
             if (result.success) {
                 showAlert('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    // Redirect based on role
                     if (result.user.role === 'teacher') {
                         window.location.href = 'index.html';
                     } else {
@@ -88,4 +128,3 @@
     </script>
 </body>
 </html>
-

@@ -7,55 +7,128 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
+    <!-- Left Side - Form -->
+    <div class="auth-form-section">
+        <div class="auth-logo">
+            <div class="auth-logo-icon">E</div>
+            <span>EMSISystem</span>
+        </div>
+        
+        <div class="auth-form-container">
             <div class="auth-header">
-                <h1>Create Account</h1>
-                <p>Register as a student</p>
+                <p class="subtitle">Start For Free</p>
+                <h1>Create new account<span class="dot">.</span></h1>
+                <p class="login-link">Already a member? <a href="login.html">Log in</a></p>
             </div>
             
             <div id="alertMessage"></div>
             
             <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" required placeholder="Enter your full name">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="firstName" required placeholder="First name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="lastName" required placeholder="Last name">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="Enter your email">
+                    <div class="input-wrapper">
+                        <span class="input-icon">✉</span>
+                        <input type="email" id="email" required placeholder="Enter your email">
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="At least 6 characters" minlength="6">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" required placeholder="At least 6 characters" minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">👁</button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">👁</button>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-block">Register</button>
+                <div class="form-group">
+                    <label for="role">Account Type</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👥</span>
+                        <select id="role" required>
+                            <option value="">Select account type</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="student">Student</option>
+                        </select>
+                    </div>
+                    <small>Teachers can manage students and grades. Students can view their results.</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
-            
-            <div class="auth-footer">
-                <p>Already have an account? <a href="login.html">Sign in here</a></p>
-            </div>
+        </div>
+    </div>
+    
+    <!-- Right Side - Visual -->
+    <div class="auth-visual-section">
+        <div class="auth-visual-content">
+            <h2>Join Thousands of Users</h2>
+            <p>Start managing your academic data efficiently today</p>
+            <ul class="auth-visual-features">
+                <li>Secure authentication system</li>
+                <li>Real-time grade calculations</li>
+                <li>Comprehensive student tracking</li>
+                <li>Professional dashboard interface</li>
+            </ul>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁';
+            }
+        }
+        
         // Handle register form submission
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const name = document.getElementById('name').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const name = `${firstName} ${lastName}`;
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            
+            // Validate role selection
+            if (!role) {
+                showAlert('Please select an account type!', 'error');
+                return;
+            }
             
             // Validate password match
             if (password !== confirmPassword) {
@@ -63,8 +136,8 @@
                 return;
             }
             
-            // Register as student (default role)
-            const result = registerUser(name, email, password, 'student');
+            // Register with selected role
+            const result = registerUser(name, email, password, role);
             
             if (result.success) {
                 showAlert('Registration successful! Redirecting to login...', 'success');
@@ -99,4 +172,3 @@
     </script>
 </body>
 </html>
-

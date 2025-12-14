@@ -7,11 +7,9 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Mobile Menu Toggle -->
     <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>EMSISystem</h2>
@@ -19,9 +17,9 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="index.html" class="active"><i>📊</i> Dashboard</a></li>
-                    <li><a href="students.html"><i>👥</i> Students</a></li>
-                    <li><a href="modules.html"><i>📚</i> Modules</a></li>
-                    <li><a href="grades.html"><i>📝</i> Grades</a></li>
+                    <li><a href="students.html" id="navStudents"><i>👥</i> Students</a></li>
+                    <li><a href="modules.html" id="navModules"><i>📚</i> Modules</a></li>
+                    <li><a href="grades.html" id="navGrades"><i>📝</i> Grades</a></li>
                     <li><a href="results.html"><i>📈</i> Results</a></li>
                     <li><a href="profile.html"><i>👤</i> Profile</a></li>
                 </ul>
@@ -34,58 +32,253 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Navbar -->
             <div class="top-navbar">
-                <h1>Dashboard</h1>
-                <div class="user-badge" id="userBadge">Teacher</div>
+                <div>
+                    <h1 id="dashboardTitle">Dashboard</h1>
+                    <p id="dashboardSubtitle" style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Welcome back! Here's what's happening today.</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <div class="user-badge" id="userBadge">Teacher</div>
+                </div>
             </div>
 
-            <!-- Content Area -->
             <div class="content-area">
                 <!-- Statistics Grid -->
-                <div class="stats-grid" id="statsGrid">
-                    <!-- Statistics will be dynamically generated here -->
+                <div class="stats-grid" id="statsGrid"></div>
+
+                <!-- Teacher Dashboard -->
+                <div id="teacherDashboard" style="display: none;">
+                    <div class="dashboard-grid">
+                        <!-- Left Column -->
+                        <div class="dashboard-left">
+                            <!-- Performance Bar Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Student Performance Overview</h2>
+                                    <select id="performancePeriod" class="chart-filter" onchange="updatePerformanceChart()">
+                                        <option value="all">All Time</option>
+                                        <option value="month">This Month</option>
+                                        <option value="week">This Week</option>
+                                    </select>
+                                </div>
+                                <div id="performanceChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Grade Distribution Bar Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Grade Distribution (0-20)</h2>
+                                </div>
+                                <div id="gradeBarChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Pass/Fail Pie Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Pass/Fail Distribution</h2>
+                                </div>
+                                <div id="passFailChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Top & Worst Students -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Top & Worst Students</h2>
+                                </div>
+                                <div id="topWorstStudents" class="top-students-list"></div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="dashboard-right">
+                            <!-- Success Metrics -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Success Metrics</h2>
+                                </div>
+                                <div id="successMetrics" class="metrics-container"></div>
+                            </div>
+
+                            <!-- Attendance Metrics -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Attendance Overview</h2>
+                                </div>
+                                <div id="attendanceMetrics" class="metrics-container"></div>
+                            </div>
+
+                            <!-- Performance Trends Line Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Performance Trends</h2>
+                                </div>
+                                <div id="trendsChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Calendar Widget -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Calendar</h2>
+                                </div>
+                                <div id="calendarWidget" class="calendar-widget"></div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Quick Actions</h2>
+                                </div>
+                                <div class="quick-actions">
+                                    <a href="students.html" class="quick-action-btn">
+                                        <span class="quick-action-icon">👥</span>
+                                        <span>Add Student</span>
+                                    </a>
+                                    <a href="modules.html" class="quick-action-btn">
+                                        <span class="quick-action-icon">📚</span>
+                                        <span>Add Module</span>
+                                    </a>
+                                    <a href="grades.html" class="quick-action-btn">
+                                        <span class="quick-action-icon">📝</span>
+                                        <span>Assign Grades</span>
+                                    </a>
+                                    <a href="results.html" class="quick-action-btn">
+                                        <span class="quick-action-icon">📈</span>
+                                        <span>View Results</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Best Student Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Best Student</h2>
-                    </div>
-                    <div id="bestStudent">
-                        <p class="empty-state">No data available yet. Add students and grades to see statistics.</p>
+                <!-- Student Dashboard -->
+                <div id="studentDashboard" style="display: none;">
+                    <div class="dashboard-grid">
+                        <!-- Left Column -->
+                        <div class="dashboard-left">
+                            <!-- My Grades Bar Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>My Grades by Subject</h2>
+                                </div>
+                                <div id="myGradesChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Performance Radar Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Performance Radar</h2>
+                                </div>
+                                <div id="radarChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Grade Trends Line Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>My Grade Trends</h2>
+                                </div>
+                                <div id="myTrendsChart" class="chart-container"></div>
+                            </div>
+
+                            <!-- Passed/Failed Modules Pie Chart -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Passed vs Failed Modules</h2>
+                                </div>
+                                <div id="myPassFailChart" class="chart-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="dashboard-right">
+                            <!-- My Performance Metrics -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>My Performance</h2>
+                                </div>
+                                <div id="myPerformanceMetrics" class="metrics-container"></div>
+                            </div>
+
+                            <!-- My Ranking -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>My Ranking</h2>
+                                </div>
+                                <div id="myRanking" class="ranking-container"></div>
+                            </div>
+
+                            <!-- Recent Grades -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Recent Grades</h2>
+                                </div>
+                                <div id="recentGrades" class="recent-grades-list"></div>
+                            </div>
+
+                            <!-- Performance Insights -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Performance Insights</h2>
+                                </div>
+                                <div id="performanceInsights" class="insights-container"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
     <script src="js/dashboard.js"></script>
     <script>
-        // Protect page - teachers only
-        protectPage('teacher');
-        
-        // Display user info and setup navigation
+        // Check authentication and role
         const user = getCurrentUser();
-        if (user) {
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
-            
-            // Hide teacher-only links for students
-            if (user.role === 'student') {
-                const teacherLinks = document.querySelectorAll('a[href="students.html"], a[href="modules.html"], a[href="grades.html"]');
-                teacherLinks.forEach(link => {
-                    link.parentElement.style.display = 'none';
-                });
-            }
+        if (!user) {
+            window.location.href = 'login.html';
+            protectPage();
         }
         
-        // Toggle sidebar on mobile
+        // Setup user info
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userBadge').textContent = user.role === 'teacher' ? 'Teacher' : 'Student';
+        
+        // Show/hide appropriate dashboard
+        if (user.role === 'teacher') {
+            document.getElementById('teacherDashboard').style.display = 'block';
+            document.getElementById('dashboardTitle').textContent = 'Teacher Dashboard';
+            document.getElementById('dashboardSubtitle').textContent = 'Manage your class and track student performance';
+        } else {
+            document.getElementById('studentDashboard').style.display = 'block';
+            document.getElementById('dashboardTitle').textContent = 'My Dashboard';
+            document.getElementById('dashboardSubtitle').textContent = 'Track your academic progress and performance';
+            
+            // Hide teacher-only navigation
+            ['navStudents', 'navModules', 'navGrades'].forEach(id => {
+                const link = document.getElementById(id);
+                if (link) link.parentElement.style.display = 'none';
+            });
+        }
+        
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('themeIcon').textContent = '☀️';
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+        }
+        
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
