@@ -88,9 +88,10 @@ function registerUser(name, email, password, role = 'student') {
         return { success: false, message: 'Password must be at least 6 characters!' };
     }
     
-    // Create new user
+    // Create new user with numeric ID
+    const maxId = users.length > 0 ? Math.max(...users.map(u => u.id || 0)) : 0;
     const newUser = {
-        id: Date.now(),
+        id: maxId + 1,
         name: name,
         email: email,
         password: password, // In real app, this would be hashed
@@ -184,9 +185,13 @@ function protectPage(requiredRole = null) {
 function initializeDefaultTeacher() {
     const users = getUsers();
     
-    if (users.length === 0) {
+    // Check if default teacher already exists
+    const teacherExists = users.some(u => u.email === 'teacher@emsi.ma');
+    
+    if (!teacherExists) {
+        const maxId = users.length > 0 ? Math.max(...users.map(u => u.id || 0)) : 0;
         const defaultTeacher = {
-            id: 1,
+            id: maxId + 1,
             name: 'Admin Teacher',
             email: 'teacher@emsi.ma',
             password: 'admin123',

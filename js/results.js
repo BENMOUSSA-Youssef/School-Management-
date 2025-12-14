@@ -111,7 +111,7 @@ function calculateAllResults() {
 }
 
 /**
- * Find student record for logged-in user
+ * Find student record for logged-in user using userId
  * @returns {Object|null} Student record or null
  */
 function findStudentForUser() {
@@ -120,14 +120,8 @@ function findStudentForUser() {
         return null;
     }
     
-    const students = getStudents();
-    // Try to match by name (case-insensitive)
-    const student = students.find(s => 
-        s.name.toLowerCase() === currentUser.name.toLowerCase() ||
-        s.cin === currentUser.email.split('@')[0] // Simple matching
-    );
-    
-    return student || null;
+    // Use getStudentByUserId from data.js to find student by userId
+    return getStudentByUserId(currentUser.id);
 }
 
 /**

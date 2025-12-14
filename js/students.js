@@ -40,11 +40,12 @@ function resetForm() {
     document.getElementById('formTitle').textContent = 'Add New Student';
     document.getElementById('cancelBtn').style.display = 'none';
     document.getElementById('studentCIN').disabled = false;
+    populateUserDropdown();
 }
 
 /**
  * Populate form with student data for editing
- * @param {string} studentId - Student ID to edit
+ * @param {number} studentId - Student ID to edit
  */
 function editStudent(studentId) {
     const student = getStudentById(studentId);
@@ -58,6 +59,7 @@ function editStudent(studentId) {
     document.getElementById('studentName').value = student.name;
     document.getElementById('studentCIN').value = student.cin;
     document.getElementById('studentGroup').value = student.group;
+    document.getElementById('studentUserId').value = student.userId || '';
     
     // Set editing mode
     editingStudentId = studentId;
@@ -65,13 +67,17 @@ function editStudent(studentId) {
     document.getElementById('cancelBtn').style.display = 'inline-block';
     document.getElementById('studentCIN').disabled = true; // Prevent CIN change
     
+    // Refresh user dropdown
+    populateUserDropdown();
+    document.getElementById('studentUserId').value = student.userId || '';
+    
     // Scroll to form
     document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
  * Delete a student after confirmation
- * @param {string} studentId - Student ID to delete
+ * @param {number} studentId - Student ID to delete
  */
 function deleteStudentHandler(studentId) {
     const student = getStudentById(studentId);
@@ -95,10 +101,34 @@ function deleteStudentHandler(studentId) {
 }
 
 /**
+ * Populate user dropdown with student users
+ */
+function populateUserDropdown() {
+    const users = getUsers();
+    const studentUsers = users.filter(u => u.role === 'student');
+    const dropdown = document.getElementById('studentUserId');
+    
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = '<option value="">Select User Account (Optional)</option>';
+    
+    studentUsers.forEach(user => {
+        // Check if user is already linked to a student
+        const students = getStudents();
+        const isLinked = students.some(s => s.userId === user.id);
+        
+        if (!isLinked || (editingStudentId && getStudentById(editingStudentId)?.userId === user.id)) {
+            dropdown.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
+        }
+    });
+}
+
+/**
  * Display all students in a table
  */
 function displayStudents() {
     const students = getStudents();
+    const users = getUsers();
     const container = document.getElementById('studentsTableContainer');
     
     if (students.length === 0) {
@@ -115,6 +145,7 @@ function displayStudents() {
                         <th>Name</th>
                         <th>CIN</th>
                         <th>Group</th>
+                        <th>Linked User</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -123,16 +154,20 @@ function displayStudents() {
     
     // Add rows for each student
     students.forEach(student => {
+        const linkedUser = student.userId ? users.find(u => u.id === student.userId) : null;
+        const userInfo = linkedUser ? `${linkedUser.name} (${linkedUser.email})` : 'Not linked';
+        
         tableHTML += `
             <tr>
                 <td>${student.name}</td>
                 <td>${student.cin}</td>
                 <td>${student.group}</td>
+                <td><small style="color: var(--text-secondary);">${userInfo}</small></td>
                 <td>
-                    <button class="btn btn-warning btn-small" onclick="editStudent('${student.id}')">
+                    <button class="btn btn-warning btn-small" onclick="editStudent(${student.id})">
                         Edit
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="deleteStudentHandler('${student.id}')">
+                    <button class="btn btn-danger btn-small" onclick="deleteStudentHandler(${student.id})">
                         Delete
                     </button>
                 </td>
@@ -172,10 +207,14 @@ function handleFormSubmit(event) {
         return;
     }
     
+    // Get userId (optional - can be empty)
+    const userId = document.getElementById('studentUserId').value;
+    
     const studentData = {
         name: name,
         cin: cin,
-        group: group
+        group: group,
+        userId: userId ? parseInt(userId) : null
     };
     
     let success = false;
@@ -207,6 +246,9 @@ function handleFormSubmit(event) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Populate user dropdown
+    populateUserDropdown();
+    
     // Display existing students
     displayStudents();
     

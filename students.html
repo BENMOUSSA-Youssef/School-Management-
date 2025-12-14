@@ -21,6 +21,7 @@
                     <li><a href="modules.html"><i>📚</i> Modules</a></li>
                     <li><a href="grades.html"><i>📝</i> Grades</a></li>
                     <li><a href="results.html"><i>📈</i> Results</a></li>
+                    <li><a href="profile.html"><i>👤</i> Profile</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -56,6 +57,15 @@
                             <div class="form-group">
                                 <label for="studentGroup">Group *</label>
                                 <input type="text" id="studentGroup" required placeholder="e.g., 3IIR-1">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentUserId">Link to User Account</label>
+                                <select id="studentUserId">
+                                    <option value="">Select User Account (Optional)</option>
+                                </select>
+                                <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 4px;">
+                                    Link this student to an existing user account for login access
+                                </small>
                             </div>
                         </div>
                         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
