@@ -32,14 +32,33 @@ let editingStudentId = null;
  */
 function showAlert(message, type) {
     const alertDiv = document.getElementById('alertMessage');
+    if (!alertDiv) {
+        console.error('Alert div not found!');
+        return;
+    }
     alertDiv.className = `alert alert-${type}`;
     alertDiv.textContent = message;
     alertDiv.style.display = 'block';
     
-    // Hide alert after 3 seconds
+    // Hide alert after 5 seconds
     setTimeout(() => {
+        if (alertDiv) {
+            alertDiv.style.display = 'none';
+            alertDiv.textContent = '';
+        }
+    }, 5000);
+}
+
+/**
+ * Clear alert message
+ */
+function clearAlert() {
+    const alertDiv = document.getElementById('alertMessage');
+    if (alertDiv) {
         alertDiv.style.display = 'none';
-    }, 3000);
+        alertDiv.textContent = '';
+        alertDiv.className = 'alert';
+    }
 }
 
 /**
@@ -51,15 +70,24 @@ function resetForm() {
     document.getElementById('formTitle').textContent = 'Add New Student';
     document.getElementById('cancelBtn').style.display = 'none';
     document.getElementById('studentCIN').disabled = false;
+    clearAlert(); // Clear any error messages
     populateUserDropdown();
 }
 
 /**
  * Populate form with student data for editing
- * @param {number} studentId - Student ID to edit
+ * @param {number|string} studentId - Student ID to edit
  */
 function editStudent(studentId) {
-    const student = getStudentById(studentId);
+    // Convert to number to ensure correct type
+    const id = typeof studentId === 'string' ? parseInt(studentId) : studentId;
+    
+    if (isNaN(id)) {
+        showAlert('Invalid student ID!', 'error');
+        return;
+    }
+    
+    const student = getStudentById(id);
     
     if (!student) {
         showAlert('Student not found!', 'error');
@@ -73,7 +101,7 @@ function editStudent(studentId) {
     document.getElementById('studentUserId').value = student.userId || '';
     
     // Set editing mode
-    editingStudentId = studentId;
+    editingStudentId = id; // Use the converted numeric ID
     document.getElementById('formTitle').textContent = 'Edit Student';
     document.getElementById('cancelBtn').style.display = 'inline-block';
     document.getElementById('studentCIN').disabled = true; // Prevent CIN change
@@ -88,24 +116,38 @@ function editStudent(studentId) {
 
 /**
  * Delete a student after confirmation
- * @param {number} studentId - Student ID to delete
+ * @param {number|string} studentId - Student ID to delete
  */
 function deleteStudentHandler(studentId) {
-    const student = getStudentById(studentId);
+    // Convert to number to ensure correct type
+    const id = typeof studentId === 'string' ? parseInt(studentId) : studentId;
+    
+    if (isNaN(id)) {
+        showAlert('Invalid student ID!', 'error');
+        console.error('Invalid student ID:', studentId, typeof studentId);
+        return;
+    }
+    
+    console.log('Attempting to delete student with ID:', id, typeof id);
+    const student = getStudentById(id);
+    console.log('Found student:', student);
     
     if (!student) {
+        // Debug: show what students exist
+        const allStudents = getStudents();
+        console.error('Student not found. Available students:', allStudents.map(s => ({ id: s.id, type: typeof s.id, name: s.name })));
         showAlert('Student not found!', 'error');
         return;
     }
     
     // Confirm deletion
     if (confirm(`Are you sure you want to delete ${student.name}? This will also delete all their grades.`)) {
-        deleteStudent(studentId); // Call function from data.js
+        deleteStudent(id); // Call function from data.js with numeric ID
         displayStudents();
         showAlert('Student deleted successfully!', 'success');
         
         // Reset form if we were editing this student
-        if (editingStudentId === studentId) {
+        if (editingStudentId === id) {
             resetForm();
         }
     }
@@ -175,10 +217,10 @@ function displayStudents() {
                 <td>${student.group}</td>
                 <td><small style="color: var(--text-secondary);">${userInfo}</small></td>
                 <td>
-                    <button class="btn btn-warning btn-small" onclick="editStudent(${student.id})">
+                    <button class="btn btn-warning btn-small" onclick="editStudent(${Number(student.id)})">
                         Edit
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="deleteStudentHandler(${student.id})">
+                    <button class="btn btn-danger btn-small" onclick="deleteStudentHandler(${Number(student.id)})">
                         Delete
                     </button>
                 </td>
@@ -264,6 +306,9 @@ function handleFormSubmit(event) {
  * It sets up all the event listeners and displays initial data
  */
 document.addEventListener('DOMContentLoaded', () => {
+    // Step 0: Clear any existing alert messages
+    clearAlert();
+    
     // Step 1: Populate the user dropdown with available student accounts
     populateUserDropdown();
     

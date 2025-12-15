@@ -85,13 +85,22 @@ function addStudent(student) {
  */
 function updateStudent(id, updatedStudent) {
     const students = getStudents();
-    const index = students.findIndex(s => s.id === id);
+    // Convert to number for comparison
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    
+    const index = students.findIndex(s => {
+        const studentId = typeof s.id === 'string' ? parseInt(s.id) : s.id;
+        return studentId === numId;
+    });
     
     if (index === -1) return false;
     
-    // Preserve ID and check CIN uniqueness (if changed)
-    updatedStudent.id = id;
-    const otherStudents = students.filter(s => s.id !== id);
+    // Preserve ID as number and check CIN uniqueness (if changed)
+    updatedStudent.id = numId; // Ensure ID is always a number
+    const otherStudents = students.filter(s => {
+        const studentId = typeof s.id === 'string' ? parseInt(s.id) : s.id;
+        return studentId !== numId;
+    });
     if (otherStudents.some(s => s.cin === updatedStudent.cin)) {
         return false; // CIN already exists in another student
     }
@@ -107,21 +116,37 @@ function updateStudent(id, updatedStudent) {
  */
 function deleteStudent(id) {
     const students = getStudents();
-    const filtered = students.filter(s => s.id !== id);
+    // Convert to number for comparison
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    
+    // Filter out the student, comparing as numbers
+    const filtered = students.filter(s => {
+        const studentId = typeof s.id === 'string' ? parseInt(s.id) : s.id;
+        return studentId !== numId;
+    });
+    
     saveStudents(filtered);
     
     // Also delete all grades for this student
-    deleteStudentGrades(id);
+    deleteStudentGrades(numId);
 }
 
 /**
  * Get a student by ID
- * @param {number} id - Student ID
+ * @param {number|string} id - Student ID
  * @returns {Object|null} Student object or null if not found
  */
 function getStudentById(id) {
     const students = getStudents();
-    return students.find(s => s.id === id) || null;
+    // Convert to number for comparison to handle both string and number IDs
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    if (isNaN(numId)) return null;
+    
+    return students.find(s => {
+        // Compare as numbers to handle type mismatches
+        const studentId = typeof s.id === 'string' ? parseInt(s.id) : s.id;
+        return studentId === numId;
+    }) || null;
 }
 
 /**
