@@ -301,20 +301,35 @@
         
         // Ensure dashboard is initialized after all scripts load
         window.addEventListener('load', () => {
-            if (typeof initializeDashboard === 'function') {
-                initializeDashboard();
-            }
-            // Also call individual functions to ensure they work
-            if (typeof updateAssessmentChart === 'function') {
-                updateAssessmentChart();
-            }
-            if (typeof updateCircularProgress === 'function') {
-                updateCircularProgress();
-            }
-            if (typeof displayRecentActivityModern === 'function') {
-                displayRecentActivityModern();
-            }
+            // Small delay to ensure all DOM elements are ready
+            setTimeout(() => {
+                if (typeof initializeDashboard === 'function') {
+                    initializeDashboard();
+                }
+                // Also call individual functions to ensure they work
+                if (typeof updateAssessmentChart === 'function') {
+                    updateAssessmentChart();
+                }
+                if (typeof updateCircularProgress === 'function') {
+                    updateCircularProgress();
+                }
+                if (typeof displayRecentActivityModern === 'function') {
+                    displayRecentActivityModern();
+                }
+            }, 100);
         });
+        
+        // Make selectCalendarDay available globally
+        window.selectCalendarDay = function(day) {
+            // Remove previous selection
+            const calendarDays = document.querySelectorAll('.calendar-day:not(.empty)');
+            calendarDays.forEach(dayEl => {
+                dayEl.classList.remove('selected');
+                if (parseInt(dayEl.textContent.trim()) === day) {
+                    dayEl.classList.add('selected');
+                }
+            });
+        };
     </script>
 </body>
 </html>

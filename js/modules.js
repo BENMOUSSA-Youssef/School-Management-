@@ -43,10 +43,12 @@ function resetForm() {
 
 /**
  * Populate form with module data for editing
- * @param {string} moduleId - Module ID to edit
+ * @param {number|string} moduleId - Module ID to edit
  */
 function editModule(moduleId) {
-    const module = getModuleById(moduleId);
+    // Convert to number to ensure correct type
+    const id = typeof moduleId === 'string' ? parseInt(moduleId) : moduleId;
+    const module = getModuleById(id);
     
     if (!module) {
         showAlert('Module not found!', 'error');
@@ -56,9 +58,10 @@ function editModule(moduleId) {
     // Populate form
     document.getElementById('moduleName').value = module.name;
     document.getElementById('moduleCoefficient').value = module.coefficient;
+    document.getElementById('moduleExamDate').value = module.examDate || '';
     
     // Set editing mode
-    editingModuleId = moduleId;
+    editingModuleId = id;
     document.getElementById('formTitle').textContent = 'Edit Module';
     document.getElementById('cancelBtn').style.display = 'inline-block';
     
@@ -68,24 +71,38 @@ function editModule(moduleId) {
 
 /**
  * Delete a module after confirmation
- * @param {string} moduleId - Module ID to delete
+ * @param {number|string} moduleId - Module ID to delete
  */
 function deleteModuleHandler(moduleId) {
-    const module = getModuleById(moduleId);
+    // Convert to number to ensure correct type
+    const id = typeof moduleId === 'string' ? parseInt(moduleId) : moduleId;
+    
+    if (isNaN(id)) {
+        showAlert('Invalid module ID!', 'error');
+        console.error('Invalid module ID:', moduleId, typeof moduleId);
+        return;
+    }
+    
+    console.log('Attempting to delete module with ID:', id, typeof id);
+    const module = getModuleById(id);
+    console.log('Found module:', module);
     
     if (!module) {
+        // Debug: show what modules exist
+        const allModules = getModules();
+        console.error('Module not found. Available modules:', allModules.map(m => ({ id: m.id, type: typeof m.id, name: m.name })));
         showAlert('Module not found!', 'error');
         return;
     }
     
     // Confirm deletion
     if (confirm(`Are you sure you want to delete "${module.name}"? This will also delete all grades for this module.`)) {
-        deleteModule(moduleId); // Call function from data.js
+        deleteModule(id); // Call function from data.js with numeric ID
         displayModules();
         showAlert('Module deleted successfully!', 'success');
         
         // Reset form if we were editing this module
-        if (editingModuleId === moduleId) {
+        if (editingModuleId === id || editingModuleId === moduleId) {
             resetForm();
         }
     }
@@ -111,6 +128,7 @@ function displayModules() {
                     <tr>
                         <th>Module Name</th>
                         <th>Coefficient</th>
+                        <th>Exam Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -119,15 +137,17 @@ function displayModules() {
     
     // Add rows for each module
     modules.forEach(module => {
+        const examDate = module.examDate ? new Date(module.examDate).toLocaleDateString('fr-FR') : 'Not set';
         tableHTML += `
             <tr>
-                <td>${module.name}</td>
+                <td><strong>${module.name}</strong></td>
                 <td>${module.coefficient}</td>
+                <td>${examDate}</td>
                 <td>
-                    <button class="btn btn-warning btn-small" onclick="editModule('${module.id}')">
+                    <button class="btn btn-warning btn-small" onclick="editModule(${Number(module.id)})">
                         Edit
                     </button>
-                    <button class="btn btn-danger btn-small" onclick="deleteModuleHandler('${module.id}')">
+                    <button class="btn btn-danger btn-small" onclick="deleteModuleHandler(${Number(module.id)})">
                         Delete
                     </button>
                 </td>
@@ -153,6 +173,7 @@ function handleFormSubmit(event) {
     // Get form values
     const name = document.getElementById('moduleName').value.trim();
     const coefficient = parseFloat(document.getElementById('moduleCoefficient').value);
+    const examDate = document.getElementById('moduleExamDate').value; // Can be empty
     
     // Validate inputs
     if (!name) {
@@ -167,7 +188,8 @@ function handleFormSubmit(event) {
     
     const moduleData = {
         name: name,
-        coefficient: coefficient
+        coefficient: coefficient,
+        examDate: examDate || '' // Store exam date (can be empty)
     };
     
     let success = false;

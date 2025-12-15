@@ -91,9 +91,11 @@ function getStatus(average) {
 
 /**
  * Calculate all student results
+ * This function calculates averages for ALL students, even if they don't have grades yet
  */
 function calculateAllResults() {
     const students = getStudents();
+    const modules = getModules();
     allResults = [];
     
     students.forEach(student => {
@@ -105,7 +107,7 @@ function calculateAllResults() {
             average: average,
             hasGrades: result.hasGrades,
             moduleCount: result.moduleCount,
-            totalModules: result.totalModules || 0
+            totalModules: modules.length || 0
         });
     });
 }
@@ -157,16 +159,8 @@ function displayResults() {
         }
     }
     
-    // Show all students even if they don't have grades yet
-    if (resultsToShow.length === 0) {
-        const students = getStudents();
-        if (students.length === 0) {
-            container.innerHTML = '<p class="empty-state">No students found. Please add students first.</p>';
-        } else {
-            container.innerHTML = '<p class="empty-state">No grades assigned yet. Students will appear here once grades are assigned.</p>';
-        }
-        return;
-    }
+    // Always show students, even if they don't have grades yet
+    // This way teachers can see all students and their status
     
     // Get filter and sort values (only for teachers)
     let filterValue = 'all';
@@ -179,14 +173,20 @@ function displayResults() {
         if (sortSelect) sortValue = sortSelect.value;
     }
     
-    // Filter results
+    // Filter results based on selected filter
     let filteredResults = [...resultsToShow];
     
     if (filterValue === 'passed') {
+        // Show only students with average >= 10
         filteredResults = filteredResults.filter(r => r.average !== null && r.average >= 10);
     } else if (filterValue === 'failed') {
-        filteredResults = filteredResults.filter(r => r.average !== null && r.average < 10);
+        // Show only students with average < 10 (or no grades)
+        filteredResults = filteredResults.filter(r => {
+            // Include students with no grades or average < 10
+            return r.average === null || r.average < 10;
+        });
     }
+    // If filterValue === 'all', show all students (no filtering)
     
     // Sort results
     filteredResults.sort((a, b) => {
@@ -204,7 +204,143 @@ function displayResults() {
         return 0;
     });
     
-    // Create table
+    // For students, show a detailed card view
+    if (isStudent) {
+        const studentRecord = findStudentForUser();
+        if (!studentRecord) {
+            container.innerHTML = '<p class="empty-state">No student record found. Please contact your teacher.</p>';
+            return;
+        }
+        
+        const student = studentRecord;
+        // Find the result for this student
+        const studentResult = allResults.find(r => r.student.id === student.id);
+        const average = studentResult ? studentResult.average : null;
+        const status = getStatus(average);
+        const mention = average !== null ? getMention(average) : { text: 'N/A', class: 'badge-secondary' };
+        const modules = getModules();
+        const studentGrades = getStudentGrades(student.id);
+        const studentAbsences = getStudentAbsences(student.id);
+        const totalAbsences = getTotalAbsences(student.id);
+        
+        // Color code the average
+        let averageColor = 'var(--text-primary)';
+        if (average !== null) {
+            if (average >= 16) averageColor = 'var(--success)';
+            else if (average >= 14) averageColor = 'var(--info)';
+            else if (average >= 12) averageColor = 'var(--warning)';
+            else if (average >= 10) averageColor = 'var(--primary)';
+            else averageColor = 'var(--danger)';
+        }
+        
+        let studentViewHTML = `
+            <div class="student-results-view">
+                <!-- Summary Card -->
+                <div class="card" style="margin-bottom: var(--spacing-lg);">
+                    <div class="card-header">
+                        <h2>My Academic Summary</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); padding: var(--spacing-lg);">
+                        <div class="summary-stat">
+                            <div class="stat-label">Overall Average</div>
+                            <div class="stat-value" style="color: ${averageColor}; font-size: 32px; font-weight: 700;">
+                                ${average !== null ? average.toFixed(2) : 'N/A'}<span style="font-size: 18px;">/20</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-label">Status</div>
+                            <div class="stat-value">
+                                <span class="badge ${status.class}" style="font-size: 16px; padding: 8px 16px;">${status.text}</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-label">Mention</div>
+                            <div class="stat-value">
+                                <span class="badge ${mention.class} mention" style="font-size: 16px; padding: 8px 16px;">${mention.text}</span>
+                            </div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="stat-label">Total Absences</div>
+                            <div class="stat-value" style="color: ${totalAbsences > 10 ? 'var(--danger)' : totalAbsences > 5 ? 'var(--warning)' : 'var(--success)'}; font-size: 32px; font-weight: 700;">
+                                ${totalAbsences}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Module Cards -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>My Grades & Absences by Module</h2>
+                    </div>
+                    <div style="padding: var(--spacing-lg);">
+        `;
+        
+        if (modules.length === 0) {
+            studentViewHTML += '<p class="empty-state">No modules available.</p>';
+        } else {
+            modules.forEach(module => {
+                const grade = studentGrades[module.id];
+                const absenceCount = studentAbsences[module.id] || 0;
+                const examDate = module.examDate ? new Date(module.examDate).toLocaleDateString('fr-FR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) : 'Not scheduled';
+                
+                let gradeColor = 'var(--text-secondary)';
+                let gradeText = 'No grade yet';
+                if (grade !== undefined && grade !== null) {
+                    gradeText = grade.toFixed(2) + '/20';
+                    if (grade >= 16) gradeColor = 'var(--success)';
+                    else if (grade >= 14) gradeColor = 'var(--info)';
+                    else if (grade >= 12) gradeColor = 'var(--warning)';
+                    else if (grade >= 10) gradeColor = 'var(--primary)';
+                    else gradeColor = 'var(--danger)';
+                }
+                
+                studentViewHTML += `
+                    <div class="module-card" style="border: 1px solid var(--border-medium); border-radius: 12px; padding: var(--spacing-lg); margin-bottom: var(--spacing-md); background: var(--bg-secondary);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-md);">
+                            <div>
+                                <h3 style="margin: 0 0 4px 0; color: var(--text-primary);">${module.name}</h3>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Coefficient: ${module.coefficient}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 24px; font-weight: 700; color: ${gradeColor};">
+                                    ${gradeText}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                            <div>
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Exam Date</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">${examDate}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Absences</div>
+                                <div style="font-weight: 600; color: ${absenceCount > 5 ? 'var(--danger)' : absenceCount > 3 ? 'var(--warning)' : 'var(--success)'};">
+                                    ${absenceCount} ${absenceCount === 1 ? 'absence' : 'absences'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        studentViewHTML += `
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = studentViewHTML;
+        return;
+    }
+    
+    // For teachers, show table view
     let tableHTML = `
         <div class="table-container">
             <table class="results-table">
@@ -216,7 +352,8 @@ function displayResults() {
                         <th>Average</th>
                         <th>Status</th>
                         <th>Mention</th>
-                        <th>Grades</th>
+                        <th>Total Absences</th>
+                        <th>Grades & Details</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,25 +365,56 @@ function displayResults() {
         const average = result.average;
         const status = getStatus(average);
         const mention = average !== null ? getMention(average) : { text: 'N/A', class: 'badge-secondary' };
+        const totalAbsences = getTotalAbsences(student.id);
         
-        // For students, show detailed grade breakdown
-        let gradesCell = `${result.moduleCount}/${result.totalModules}`;
-        if (isStudent && result.moduleCount > 0) {
-            const modules = getModules();
-            const studentGrades = getStudentGrades(student.id);
-            const gradesList = modules
-                .filter(m => studentGrades[m.id] !== undefined)
-                .map(m => `${m.name}: ${studentGrades[m.id].toFixed(2)}`)
-                .join('<br>');
-            gradesCell = `<div style="text-align: left;"><small>${gradesList}</small></div>`;
+        // Show detailed grade breakdown
+        let gradesCell = `${result.moduleCount}/${result.totalModules} modules`;
+        const modules = getModules();
+        const studentGrades = getStudentGrades(student.id);
+        const studentAbsences = getStudentAbsences(student.id);
+        
+        if (modules.length > 0) {
+            const gradesList = modules.map(m => {
+                const grade = studentGrades[m.id];
+                const absence = studentAbsences[m.id] || 0;
+                const examDate = m.examDate ? new Date(m.examDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : 'No date';
+                
+                if (grade !== undefined) {
+                    const color = grade >= 16 ? 'var(--success)' : 
+                                 grade >= 14 ? 'var(--info)' : 
+                                 grade >= 12 ? 'var(--warning)' : 
+                                 grade >= 10 ? 'var(--primary)' : 'var(--danger)';
+                    return `<div style="margin-bottom: 6px; font-size: 11px;">
+                        <strong style="color: ${color};">${m.name}: ${grade.toFixed(2)}/20</strong><br>
+                        <span style="color: var(--text-secondary);">Abs: ${absence} | Exam: ${examDate}</span>
+                    </div>`;
+                } else {
+                    return `<div style="margin-bottom: 6px; font-size: 11px; color: var(--text-secondary);">
+                        ${m.name}: No grade | Abs: ${absence} | Exam: ${examDate}
+                    </div>`;
+                }
+            }).join('');
+            gradesCell = `<div style="text-align: left; font-size: 11px; max-width: 300px;">${gradesList}</div>`;
+        } else {
+            gradesCell = '<span style="color: var(--text-secondary);">No modules</span>';
+        }
+        
+        // Color code the average
+        let averageColor = 'var(--text-primary)';
+        if (average !== null) {
+            if (average >= 16) averageColor = 'var(--success)';
+            else if (average >= 14) averageColor = 'var(--info)';
+            else if (average >= 12) averageColor = 'var(--warning)';
+            else if (average >= 10) averageColor = 'var(--primary)';
+            else averageColor = 'var(--danger)';
         }
         
         tableHTML += `
             <tr>
-                <td>${student.name}</td>
+                <td><strong>${student.name}</strong></td>
                 <td>${student.cin}</td>
                 <td>${student.group}</td>
-                <td class="average">
+                <td class="average" style="color: ${averageColor}; font-weight: 700;">
                     ${average !== null ? average.toFixed(2) + '/20' : 'N/A'}
                 </td>
                 <td>
@@ -255,6 +423,9 @@ function displayResults() {
                 <td>
                     <span class="badge ${mention.class} mention">${mention.text}</span>
                 </td>
+                <td style="color: ${totalAbsences > 10 ? 'var(--danger)' : totalAbsences > 5 ? 'var(--warning)' : 'var(--success)'}; font-weight: 600;">
+                    ${totalAbsences}
+                </td>
                 <td>
                     ${gradesCell}
                 </td>
@@ -262,11 +433,24 @@ function displayResults() {
         `;
     });
     
-    tableHTML += `
-                </tbody>
-            </table>
-        </div>
-    `;
+    // If no filtered results, show a message
+    if (filteredResults.length === 0) {
+        let message = '';
+        if (filterValue === 'passed') {
+            message = 'No students have passed yet (average ≥ 10).';
+        } else if (filterValue === 'failed') {
+            message = 'No students have failed. All students are passing!';
+        } else {
+            message = 'No results to display.';
+        }
+        tableHTML = `<p class="empty-state">${message}</p>`;
+    } else {
+        tableHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
     
     container.innerHTML = tableHTML;
 }

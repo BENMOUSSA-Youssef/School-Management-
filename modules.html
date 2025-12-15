@@ -60,6 +60,13 @@
                                 <label for="moduleCoefficient">Coefficient *</label>
                                 <input type="number" id="moduleCoefficient" required min="1" max="10" step="0.5" placeholder="e.g., 3">
                             </div>
+                            <div class="form-group">
+                                <label for="moduleExamDate">Exam/Control Date (Optional)</label>
+                                <input type="date" id="moduleExamDate" placeholder="Select exam date">
+                                <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 4px;">
+                                    Set the date for exams or controls for this module
+                                </small>
+                            </div>
                         </div>
                         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                             <button type="submit" class="btn btn-primary">Save Module</button>

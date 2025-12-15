@@ -134,7 +134,7 @@ function saveModules(modules) {
 
 /**
  * Add a new module
- * @param {Object} module - Module object with name and coefficient
+ * @param {Object} module - Module object with name, coefficient, and optional examDate
  * @returns {boolean} True if added successfully, false if name already exists
  */
 function addModule(module) {
@@ -145,9 +145,14 @@ function addModule(module) {
         return false;
     }
     
-    // Add unique numeric ID
-    const maxId = modules.length > 0 ? Math.max(...modules.map(m => m.id || 0)) : 0;
-    module.id = maxId + 1;
+    // Add unique numeric ID (ensure it's a number, not a string)
+    const maxId = modules.length > 0 ? Math.max(...modules.map(m => {
+        const id = typeof m.id === 'string' ? parseInt(m.id) : m.id;
+        return isNaN(id) ? 0 : id;
+    })) : 0;
+    module.id = maxId + 1; // Ensure it's always a number
+    // Ensure examDate is included (can be empty string)
+    if (!module.examDate) module.examDate = '';
     modules.push(module);
     saveModules(modules);
     return true;
@@ -161,13 +166,22 @@ function addModule(module) {
  */
 function updateModule(id, updatedModule) {
     const modules = getModules();
-    const index = modules.findIndex(m => m.id === id);
+    // Convert to number for comparison
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    
+    const index = modules.findIndex(m => {
+        const moduleId = typeof m.id === 'string' ? parseInt(m.id) : m.id;
+        return moduleId === numId;
+    });
     
     if (index === -1) return false;
     
-    // Preserve ID and check name uniqueness (if changed)
-    updatedModule.id = id;
-    const otherModules = modules.filter(m => m.id !== id);
+    // Preserve ID as number and check name uniqueness (if changed)
+    updatedModule.id = numId; // Ensure ID is always a number
+    const otherModules = modules.filter(m => {
+        const moduleId = typeof m.id === 'string' ? parseInt(m.id) : m.id;
+        return moduleId !== numId;
+    });
     if (otherModules.some(m => m.name.toLowerCase() === updatedModule.name.toLowerCase())) {
         return false; // Name already exists in another module
     }
@@ -183,21 +197,37 @@ function updateModule(id, updatedModule) {
  */
 function deleteModule(id) {
     const modules = getModules();
-    const filtered = modules.filter(m => m.id !== id);
+    // Convert to number for comparison
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    
+    // Filter out the module, comparing as numbers
+    const filtered = modules.filter(m => {
+        const moduleId = typeof m.id === 'string' ? parseInt(m.id) : m.id;
+        return moduleId !== numId;
+    });
+    
     saveModules(filtered);
     
     // Also delete all grades for this module
-    deleteModuleGrades(id);
+    deleteModuleGrades(numId);
 }
 
 /**
  * Get a module by ID
- * @param {number} id - Module ID
+ * @param {number|string} id - Module ID
  * @returns {Object|null} Module object or null if not found
  */
 function getModuleById(id) {
     const modules = getModules();
-    return modules.find(m => m.id === id) || null;
+    // Convert to number for comparison to handle both string and number IDs
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    if (isNaN(numId)) return null;
+    
+    return modules.find(m => {
+        // Compare as numbers to handle type mismatches
+        const moduleId = typeof m.id === 'string' ? parseInt(m.id) : m.id;
+        return moduleId === numId;
+    }) || null;
 }
 
 // ============================================
@@ -308,15 +338,126 @@ function getStudentGrades(studentId) {
 }
 
 // ============================================
+// ABSENCE DATA MANAGEMENT
+// ============================================
+
+/**
+ * Get all absences from localStorage
+ * Absences are stored as: [{studentId, moduleId, count}, ...]
+ * @returns {Array} Array of absence objects
+ */
+function getAbsences() {
+    const absencesJSON = localStorage.getItem('absences');
+    return absencesJSON ? JSON.parse(absencesJSON) : [];
+}
+
+/**
+ * Save absences array to localStorage
+ * @param {Array} absences - Array of absence objects
+ */
+function saveAbsences(absences) {
+    localStorage.setItem('absences', JSON.stringify(absences));
+}
+
+/**
+ * Get absence count for a specific student and module
+ * @param {number} studentId - Student ID
+ * @param {number} moduleId - Module ID
+ * @returns {number} Absence count (default 0)
+ */
+function getAbsenceCount(studentId, moduleId) {
+    const absences = getAbsences();
+    // Convert to numbers to ensure proper comparison
+    const sid = typeof studentId === 'string' ? parseInt(studentId) : studentId;
+    const mid = typeof moduleId === 'string' ? parseInt(moduleId) : moduleId;
+    const absenceObj = absences.find(a => 
+        (typeof a.studentId === 'string' ? parseInt(a.studentId) : a.studentId) === sid &&
+        (typeof a.moduleId === 'string' ? parseInt(a.moduleId) : a.moduleId) === mid
+    );
+    return absenceObj ? (typeof absenceObj.count === 'string' ? parseInt(absenceObj.count) : absenceObj.count) : 0;
+}
+
+/**
+ * Set absence count for a specific student and module
+ * @param {number} studentId - Student ID
+ * @param {number} moduleId - Module ID
+ * @param {number} count - Absence count
+ */
+function setAbsenceCount(studentId, moduleId, count) {
+    let absences = getAbsences();
+    const countValue = parseInt(count) || 0;
+    
+    // Convert to numbers to ensure proper comparison
+    const sid = typeof studentId === 'string' ? parseInt(studentId) : studentId;
+    const mid = typeof moduleId === 'string' ? parseInt(moduleId) : moduleId;
+    
+    // Find existing absence record
+    const index = absences.findIndex(a => 
+        (typeof a.studentId === 'string' ? parseInt(a.studentId) : a.studentId) === sid &&
+        (typeof a.moduleId === 'string' ? parseInt(a.moduleId) : a.moduleId) === mid
+    );
+    
+    if (countValue === 0) {
+        // Remove absence record if count is 0
+        if (index !== -1) {
+            absences.splice(index, 1);
+        }
+    } else {
+        if (index !== -1) {
+            // Update existing absence
+            absences[index].count = countValue;
+        } else {
+            // Add new absence record (ensure IDs are numbers)
+            absences.push({
+                studentId: sid,
+                moduleId: mid,
+                count: countValue
+            });
+        }
+    }
+    
+    saveAbsences(absences);
+}
+
+/**
+ * Get all absences for a specific student
+ * @param {number} studentId - Student ID
+ * @returns {Object} Object with moduleId as keys and absence count as values
+ */
+function getStudentAbsences(studentId) {
+    const absences = getAbsences();
+    const studentAbsences = {};
+    
+    absences.forEach(absenceObj => {
+        if (absenceObj.studentId === studentId) {
+            studentAbsences[absenceObj.moduleId] = absenceObj.count;
+        }
+    });
+    
+    return studentAbsences;
+}
+
+/**
+ * Get total absence count for a student across all modules
+ * @param {number} studentId - Student ID
+ * @returns {number} Total absence count
+ */
+function getTotalAbsences(studentId) {
+    const studentAbsences = getStudentAbsences(studentId);
+    return Object.values(studentAbsences).reduce((sum, count) => sum + count, 0);
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
 /**
  * Clear all data from localStorage
- * WARNING: This will delete all students, modules, and grades
+ * WARNING: This will delete all students, modules, grades, and absences
  */
 function clearAllData() {
     localStorage.removeItem('students');
     localStorage.removeItem('modules');
     localStorage.removeItem('grades');
+    localStorage.removeItem('absences');
 }

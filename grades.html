@@ -47,15 +47,24 @@
             <div class="content-area">
                 <div class="card">
                     <div class="alert alert-info">
-                        <strong>Instructions:</strong> Enter grades between 0 and 20. Grades are saved automatically when you leave the input field.
+                        <strong>📝 Instructions for Teachers:</strong> 
+                        <ul style="margin: 8px 0 0 20px; padding: 0;">
+                            <li><strong>Enter Grades:</strong> Type a number between 0 and 20 in the "Grade" field for each student and module.</li>
+                            <li><strong>Enter Absences:</strong> Type the number of absences in the "Absences" field (0 or positive number).</li>
+                            <li><strong>Auto-Save:</strong> Data is saved automatically when you click outside the input field or press Enter.</li>
+                            <li><strong>Color Coding:</strong> Grades are color-coded (Green ≥16, Blue ≥14, Yellow ≥12, Light Blue ≥10, Red &lt;10).</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Grades Table</h2>
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>Grades & Absences Table</h2>
+                        <div id="tableStatus" style="font-size: 13px; color: var(--text-secondary);">
+                            Loading table...
+                        </div>
                     </div>
-                    <div id="gradesTableContainer"></div>
+                    <div id="gradesTableContainer" style="min-height: 200px;"></div>
                 </div>
             </div>
         </main>
@@ -104,12 +113,34 @@
         }
         
         // Ensure grades table is displayed after page loads
-        // This is a backup in case DOMContentLoaded in grades.js doesn't fire
-        window.addEventListener('load', () => {
-            if (typeof displayGradesTable === 'function') {
-                displayGradesTable();
+        // Multiple initialization attempts to ensure it works
+        function initializeGradesPage() {
+            // Check if user is teacher
+            const user = getCurrentUser();
+            if (!user || user.role !== 'teacher') {
+                console.error('Only teachers can access this page');
+                return;
             }
-        });
+            
+            // Wait a bit for DOM to be ready
+            setTimeout(() => {
+                if (typeof displayGradesTable === 'function') {
+                    console.log('Displaying grades table...');
+                    displayGradesTable();
+                } else {
+                    console.error('displayGradesTable function not found!');
+                }
+            }, 100);
+        }
+        
+        // Try multiple times to ensure it loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeGradesPage);
+        } else {
+            initializeGradesPage();
+        }
+        
+        window.addEventListener('load', initializeGradesPage);
     </script>
 </body>
 </html>

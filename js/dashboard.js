@@ -606,7 +606,7 @@ function displayCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const isToday = day === todayDate;
         const hasEvent = eventDates.includes(day);
-        html += `<div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}">${day}</div>`;
+        html += `<div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" onclick="selectCalendarDay(${day})" title="Click to view events">${day}</div>`;
     }
     
     html += `
@@ -1451,6 +1451,22 @@ function initializeDashboard() {
         displayMyRanking();
         displayRecentGrades();
     }
+}
+
+/**
+ * Make calendar interactive - handle day clicks
+ */
+function selectCalendarDay(day) {
+    // You can add functionality here to show events for that day
+    console.log(`Selected day: ${day}`);
+    // For now, just highlight the selected day
+    const calendarDays = document.querySelectorAll('.calendar-day:not(.empty)');
+    calendarDays.forEach(dayEl => {
+        dayEl.classList.remove('selected');
+        if (parseInt(dayEl.textContent) === day) {
+            dayEl.classList.add('selected');
+        }
+    });
 }
 
 // Initialize when page loads
