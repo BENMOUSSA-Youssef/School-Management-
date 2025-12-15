@@ -140,7 +140,22 @@
             initializeGradesPage();
         }
         
-        window.addEventListener('load', initializeGradesPage);
+        window.addEventListener('load', () => {
+            // Test localStorage on load
+            if (typeof testLocalStorage === 'function') {
+                testLocalStorage();
+            }
+            initializeGradesPage();
+        });
+        
+        // Also try after a longer delay as backup
+        setTimeout(() => {
+            const container = document.getElementById('gradesTableContainer');
+            if (container && (!container.innerHTML || container.innerHTML.trim() === '')) {
+                console.log('🔄 Backup: Re-initializing grades table...');
+                initializeGradesPage();
+            }
+        }, 500);
     </script>
 </body>
 </html>

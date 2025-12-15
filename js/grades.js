@@ -125,13 +125,24 @@ function handleGradeChange(studentId, moduleId, input) {
  * This function creates an interactive table where teachers can assign grades
  */
 function displayGradesTable() {
+    console.log('🔍 Starting displayGradesTable()...');
+    
+    // Get data from localStorage
     const students = getStudents();
     const modules = getModules();
+    
+    console.log('📊 Data loaded:', {
+        studentsCount: students.length,
+        modulesCount: modules.length,
+        students: students.map(s => ({ id: s.id, name: s.name })),
+        modules: modules.map(m => ({ id: m.id, name: m.name }))
+    });
+    
     const container = document.getElementById('gradesTableContainer');
     const statusEl = document.getElementById('tableStatus');
     
     if (!container) {
-        console.error('Grades table container not found!');
+        console.error('❌ Grades table container not found!');
         if (statusEl) statusEl.textContent = 'Error: Container not found';
         return;
     }
@@ -141,17 +152,20 @@ function displayGradesTable() {
     
     // Check if we have students and modules
     if (students.length === 0) {
+        console.warn('⚠️ No students found in localStorage');
         container.innerHTML = '<p class="empty-state">❌ No students found. Please add students first from the <a href="students.html">Students page</a>.</p>';
         if (statusEl) statusEl.textContent = 'No students';
         return;
     }
     
     if (modules.length === 0) {
+        console.warn('⚠️ No modules found in localStorage');
         container.innerHTML = '<p class="empty-state">❌ No modules found. Please add modules first from the <a href="modules.html">Modules page</a>.</p>';
         if (statusEl) statusEl.textContent = 'No modules';
         return;
     }
     
+    console.log('✅ Data check passed:', students.length, 'students,', modules.length, 'modules');
     if (statusEl) statusEl.textContent = `Ready: ${students.length} students × ${modules.length} modules`;
     
     // Create table with proper styling
@@ -183,7 +197,12 @@ function displayGradesTable() {
     `;
     
     // Add rows for each student
-    students.forEach(student => {
+    console.log('📝 Creating table rows for', students.length, 'students...');
+    students.forEach((student, studentIndex) => {
+        // Ensure student ID is a number
+        const studentId = typeof student.id === 'string' ? parseInt(student.id) : student.id;
+        console.log(`  Creating row ${studentIndex + 1} for student:`, student.name, 'ID:', studentId);
+        
         tableHTML += `
             <tr style="border-bottom: 1px solid var(--border-medium);">
                 <td style="position: sticky; left: 0; background: var(--bg-primary); z-index: 5; padding: 12px; font-weight: 600; color: var(--text-primary);">${student.name}</td>
@@ -192,10 +211,13 @@ function displayGradesTable() {
         `;
         
         // Add grade and absence inputs for each module
-        modules.forEach(module => {
-            const currentGrade = getGrade(student.id, module.id);
+        modules.forEach((module, moduleIndex) => {
+            // Ensure module ID is a number
+            const moduleId = typeof module.id === 'string' ? parseInt(module.id) : module.id;
+            
+            const currentGrade = getGrade(studentId, moduleId);
             const gradeValue = currentGrade !== null ? currentGrade : '';
-            const currentAbsence = getAbsenceCount(student.id, module.id);
+            const currentAbsence = getAbsenceCount(studentId, moduleId);
             
             // Color code based on grade
             let inputClass = 'grade-input';
@@ -220,8 +242,8 @@ function displayGradesTable() {
                                 step="0.01"
                                 value="${gradeValue}"
                                 placeholder="0-20"
-                                onchange="handleGradeChange(${student.id}, ${module.id}, this)"
-                                onblur="handleGradeChange(${student.id}, ${module.id}, this)"
+                                onchange="handleGradeChange(${studentId}, ${moduleId}, this)"
+                                onblur="handleGradeChange(${studentId}, ${moduleId}, this)"
                                 onkeypress="if(event.key==='Enter') this.blur()"
                                 style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px;"
                             >
@@ -235,8 +257,8 @@ function displayGradesTable() {
                                 step="1"
                                 value="${currentAbsence}"
                                 placeholder="0"
-                                onchange="handleAbsenceChange(${student.id}, ${module.id}, this)"
-                                onblur="handleAbsenceChange(${student.id}, ${module.id}, this)"
+                                onchange="handleAbsenceChange(${studentId}, ${moduleId}, this)"
+                                onblur="handleAbsenceChange(${studentId}, ${moduleId}, this)"
                                 onkeypress="if(event.key==='Enter') this.blur()"
                                 style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px;"
                             >
@@ -255,22 +277,24 @@ function displayGradesTable() {
         </div>
     `;
     
-    // Debug: Log table HTML length
-    console.log('Table HTML length:', tableHTML.length);
-    console.log('Table HTML preview:', tableHTML.substring(0, 500));
+    // Debug: Log table HTML info
+    console.log('📄 Table HTML generated, length:', tableHTML.length);
+    console.log('📄 Table HTML preview (first 500 chars):', tableHTML.substring(0, 500));
     
     // Clear container first
     container.innerHTML = '';
     
     // Set the HTML
     container.innerHTML = tableHTML;
+    console.log('✅ HTML inserted into container');
     
-    // Force display
-    container.style.display = 'block';
-    container.style.visibility = 'visible';
-    container.style.opacity = '1';
-    container.style.height = 'auto';
-    container.style.minHeight = '200px';
+    // Force display with important styles
+    container.style.setProperty('display', 'block', 'important');
+    container.style.setProperty('visibility', 'visible', 'important');
+    container.style.setProperty('opacity', '1', 'important');
+    container.style.setProperty('height', 'auto', 'important');
+    container.style.setProperty('min-height', '200px', 'important');
+    container.style.setProperty('width', '100%', 'important');
     
     // Verify the table was inserted
     const insertedTable = container.querySelector('table');
@@ -313,6 +337,30 @@ function displayGradesTable() {
 window.handleGradeChange = handleGradeChange;
 window.handleAbsenceChange = handleAbsenceChange;
 window.displayGradesTable = displayGradesTable;
+
+// Test function to verify localStorage data
+window.testLocalStorage = function() {
+    console.log('🧪 Testing localStorage...');
+    const students = getStudents();
+    const modules = getModules();
+    const grades = getGrades();
+    const absences = getAbsences();
+    
+    console.log('📦 localStorage data:');
+    console.log('  Students:', students.length, students);
+    console.log('  Modules:', modules.length, modules);
+    console.log('  Grades:', grades.length, grades);
+    console.log('  Absences:', absences.length, absences);
+    
+    // Check raw localStorage
+    console.log('📦 Raw localStorage:');
+    console.log('  students:', localStorage.getItem('students'));
+    console.log('  modules:', localStorage.getItem('modules'));
+    console.log('  grades:', localStorage.getItem('grades'));
+    console.log('  absences:', localStorage.getItem('absences'));
+    
+    return { students, modules, grades, absences };
+};
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
