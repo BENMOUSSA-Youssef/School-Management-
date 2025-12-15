@@ -21,8 +21,19 @@
  * @returns {Array} Array of student objects with {id, name, cin, group, userId}
  */
 function getStudents() {
-    const studentsJSON = localStorage.getItem('students');
-    return studentsJSON ? JSON.parse(studentsJSON) : [];
+    try {
+        const studentsJSON = localStorage.getItem('students');
+        if (!studentsJSON) {
+            console.log('No students found in localStorage');
+            return [];
+        }
+        const students = JSON.parse(studentsJSON);
+        console.log('Loaded students from localStorage:', students.length);
+        return students;
+    } catch (error) {
+        console.error('Error loading students from localStorage:', error);
+        return [];
+    }
 }
 
 /**
@@ -30,7 +41,19 @@ function getStudents() {
  * @param {Array} students - Array of student objects
  */
 function saveStudents(students) {
-    localStorage.setItem('students', JSON.stringify(students));
+    try {
+        const studentsJSON = JSON.stringify(students);
+        localStorage.setItem('students', studentsJSON);
+        console.log('✅ Students saved to localStorage:', students.length, 'students');
+        // Verify it was saved
+        const verify = localStorage.getItem('students');
+        if (!verify) {
+            console.error('❌ Failed to save students - localStorage may be disabled or full');
+        }
+    } catch (error) {
+        console.error('❌ Error saving students to localStorage:', error);
+        alert('Error saving data! Your browser may have localStorage disabled or be out of storage space.');
+    }
 }
 
 /**
@@ -129,7 +152,21 @@ function getModules() {
  * @param {Array} modules - Array of module objects
  */
 function saveModules(modules) {
-    localStorage.setItem('modules', JSON.stringify(modules));
+    try {
+        const modulesJSON = JSON.stringify(modules);
+        localStorage.setItem('modules', modulesJSON);
+        console.log('✅ Modules saved to localStorage:', modules.length, 'modules');
+        // Verify it was saved
+        const verify = localStorage.getItem('modules');
+        if (!verify) {
+            console.error('❌ Failed to save modules - localStorage may be disabled or full');
+        }
+    } catch (error) {
+        console.error('❌ Error saving modules to localStorage:', error);
+        if (error.name === 'QuotaExceededError') {
+            alert('Storage is full! Please clear some data or use a different browser.');
+        }
+    }
 }
 
 /**
@@ -249,7 +286,21 @@ function getGrades() {
  * @param {Array} grades - Array of grade objects
  */
 function saveGrades(grades) {
-    localStorage.setItem('grades', JSON.stringify(grades));
+    try {
+        const gradesJSON = JSON.stringify(grades);
+        localStorage.setItem('grades', gradesJSON);
+        console.log('✅ Grades saved to localStorage:', grades.length, 'grades');
+        // Verify it was saved
+        const verify = localStorage.getItem('grades');
+        if (!verify) {
+            console.error('❌ Failed to save grades - localStorage may be disabled or full');
+        }
+    } catch (error) {
+        console.error('❌ Error saving grades to localStorage:', error);
+        if (error.name === 'QuotaExceededError') {
+            alert('Storage is full! Please clear some data or use a different browser.');
+        }
+    }
 }
 
 /**
@@ -356,7 +407,21 @@ function getAbsences() {
  * @param {Array} absences - Array of absence objects
  */
 function saveAbsences(absences) {
-    localStorage.setItem('absences', JSON.stringify(absences));
+    try {
+        const absencesJSON = JSON.stringify(absences);
+        localStorage.setItem('absences', absencesJSON);
+        console.log('✅ Absences saved to localStorage:', absences.length, 'absence records');
+        // Verify it was saved
+        const verify = localStorage.getItem('absences');
+        if (!verify) {
+            console.error('❌ Failed to save absences - localStorage may be disabled or full');
+        }
+    } catch (error) {
+        console.error('❌ Error saving absences to localStorage:', error);
+        if (error.name === 'QuotaExceededError') {
+            alert('Storage is full! Please clear some data or use a different browser.');
+        }
+    }
 }
 
 /**
