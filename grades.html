@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grades - Student Management System</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        // CRITICAL: Check localStorage support and protocol
+        window.addEventListener('load', () => {
+            console.log('🌐 Protocol:', window.location.protocol);
+            console.log('🌐 Host:', window.location.host);
+            console.log('🌐 Full URL:', window.location.href);
+            
+            if (window.location.protocol === 'file:') {
+                console.warn('⚠️ WARNING: Using file:// protocol! localStorage may not persist!');
+                console.warn('⚠️ Please use a local server (see README_STORAGE.md)');
+                alert('⚠️ WARNING: You are using file:// protocol!\n\nlocalStorage may not work properly.\n\nPlease use a local server:\n1. Open Terminal\n2. cd to project folder\n3. Run: python3 -m http.server 8000\n4. Open: http://localhost:8000');
+            }
+            
+            // Test localStorage
+            try {
+                localStorage.setItem('__test__', 'test');
+                const test = localStorage.getItem('__test__');
+                if (test === 'test') {
+                    localStorage.removeItem('__test__');
+                    console.log('✅ localStorage is working!');
+                } else {
+                    console.error('❌ localStorage test failed!');
+                }
+            } catch (e) {
+                console.error('❌ localStorage error:', e);
+                alert('❌ localStorage is disabled or not available!\n\n' + e.message);
+            }
+        });
+    </script>
 </head>
 <body>
     <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>

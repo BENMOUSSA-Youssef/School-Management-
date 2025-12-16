@@ -23,15 +23,16 @@
 function getStudents() {
     try {
         const studentsJSON = localStorage.getItem('students');
-        if (!studentsJSON) {
-            console.log('No students found in localStorage');
+        if (!studentsJSON || studentsJSON === 'null' || studentsJSON === 'undefined') {
+            console.log('📭 No students found in localStorage');
             return [];
         }
         const students = JSON.parse(studentsJSON);
-        console.log('Loaded students from localStorage:', students.length);
-        return students;
+        console.log('✅ Loaded', students.length, 'students from localStorage');
+        return Array.isArray(students) ? students : [];
     } catch (error) {
-        console.error('Error loading students from localStorage:', error);
+        console.error('❌ Error loading students from localStorage:', error);
+        console.error('Raw data:', localStorage.getItem('students'));
         return [];
     }
 }

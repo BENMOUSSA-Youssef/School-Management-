@@ -300,7 +300,8 @@ function displayGradesTable() {
     const insertedTable = container.querySelector('table');
     if (!insertedTable) {
         console.error('❌ Table was not inserted into container!');
-        container.innerHTML = '<div style="padding: 20px; background: var(--danger); color: white; border-radius: 8px;"><strong>Error:</strong> Table failed to render. HTML length: ' + tableHTML.length + '</div>';
+        console.error('Container HTML:', container.innerHTML.substring(0, 200));
+        container.innerHTML = '<div style="padding: 20px; background: var(--danger); color: white; border-radius: 8px; margin: 20px;"><strong>❌ Error:</strong> Table failed to render.<br>HTML length: ' + tableHTML.length + '<br>Check console for details.</div>';
         return;
     }
     
@@ -308,7 +309,8 @@ function displayGradesTable() {
     const rows = insertedTable.querySelectorAll('tbody tr');
     if (rows.length === 0) {
         console.error('❌ No table rows found!');
-        container.innerHTML = '<div style="padding: 20px; background: var(--warning); color: white; border-radius: 8px;"><strong>Warning:</strong> Table created but no rows found. Students: ' + students.length + ', Modules: ' + modules.length + '</div>';
+        console.error('Table HTML:', tableHTML.substring(0, 1000));
+        container.innerHTML = '<div style="padding: 20px; background: var(--warning); color: white; border-radius: 8px; margin: 20px;"><strong>⚠️ Warning:</strong> Table created but no rows found.<br>Students: ' + students.length + '<br>Modules: ' + modules.length + '<br>Check console for details.</div>';
         return;
     }
     
@@ -364,11 +366,19 @@ window.testLocalStorage = function() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded - Initializing grades table');
+    console.log('✅ DOM Content Loaded - Initializing grades table');
+    console.log('📦 Checking localStorage...');
+    
+    // First, verify data exists
+    const students = getStudents();
+    const modules = getModules();
+    console.log('📊 Initial check - Students:', students.length, 'Modules:', modules.length);
+    
     // Small delay to ensure all scripts are loaded
     setTimeout(() => {
+        console.log('🚀 Calling displayGradesTable()...');
         displayGradesTable();
-    }, 50);
+    }, 100);
 });
 
 // Backup initialization on window load

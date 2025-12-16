@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test localStorage</title>
+</head>
+<body>
+    <h1>localStorage Test</h1>
+    <button onclick="testSave()">Test Save</button>
+    <button onclick="testLoad()">Test Load</button>
+    <button onclick="testClear()">Clear All</button>
+    <div id="results"></div>
+
+    <script>
+        function testSave() {
+            const testData = {
+                students: [{id: 1, name: "Test Student", cin: "TEST123", group: "3IIR-1"}],
+                modules: [{id: 1, name: "Test Module", coefficient: 2}]
+            };
+            
+            try {
+                localStorage.setItem('students', JSON.stringify(testData.students));
+                localStorage.setItem('modules', JSON.stringify(testData.modules));
+                document.getElementById('results').innerHTML = '<p style="color: green;">✅ Data saved successfully!</p>';
+                console.log('✅ Saved:', testData);
+            } catch (e) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">❌ Error: ' + e.message + '</p>';
+                console.error('❌ Error saving:', e);
+            }
+        }
+        
+        function testLoad() {
+            try {
+                const students = JSON.parse(localStorage.getItem('students') || '[]');
+                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+                document.getElementById('results').innerHTML = `
+                    <p><strong>Students:</strong> ${students.length}</p>
+                    <p><strong>Modules:</strong> ${modules.length}</p>
+                    <pre>${JSON.stringify({students, modules}, null, 2)}</pre>
+                `;
+                console.log('📦 Loaded:', {students, modules});
+            } catch (e) {
+                document.getElementById('results').innerHTML = '<p style="color: red;">❌ Error: ' + e.message + '</p>';
+                console.error('❌ Error loading:', e);
+            }
+        }
+        
+        function testClear() {
+            localStorage.clear();
+            document.getElementById('results').innerHTML = '<p style="color: orange;">🗑️ All data cleared!</p>';
+        }
+        
+        // Auto-load on page open
+        window.addEventListener('load', () => {
+            console.log('🔍 Protocol:', window.location.protocol);
+            console.log('🔍 Host:', window.location.host);
+            testLoad();
+        });
+    </script>
+</body>
+</html>
+
